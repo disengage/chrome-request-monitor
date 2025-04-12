@@ -24,7 +24,7 @@ document.getElementById("clear").addEventListener("click", () => {
 
 chrome.storage.local.get("requests", (data) => {
   const requests = data.requests?.reverse();
-  requests.forEach((req) => {
+  requests?.forEach((req) => {
     displayRequest(req);
   });
   onInputChanges(requests);
@@ -72,9 +72,11 @@ function onInputChanges(requests) {
     clearDisplay();
     const text = event.target.value;
     if (text == "") {
-      requests.map((req) => displayRequest(req));
+      requests?.map((req) => displayRequest(req));
     } else {
-      const filtered = requests.filter((request) => request.url.includes(text));
+      const filtered = requests?.filter((request) =>
+        request.url.includes(text)
+      );
       filtered.map((req) => displayRequest(req));
       filtered.length == 0 && displayEmpty();
     }
