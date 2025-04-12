@@ -18,16 +18,26 @@ const copyToClipBoard = (text, callback) => {
 };
 
 document.getElementById("clear").addEventListener("click", () => {
-  clearDisplay();
-  chrome.runtime.sendMessage({ action: "clear" });
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs.length > 0) {
+      const tabId = tabs[0].id;
+      clearDisplay();
+      chrome.runtime.sendMessage({ action: "clear", tabId: tabId });
+    }
+  });
 });
 
-chrome.storage.local.get("requests", (data) => {
-  const requests = data.requests?.reverse();
-  requests?.forEach((req) => {
-    displayRequest(req);
-  });
-  onInputChanges(requests);
+chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+  if (tabs.length > 0) {
+    const tabId = tabs[0].id;
+    chrome.storage.local.get("requests", (data) => {
+      const requests = data.requests?.filter((req) => req.tabId === tabId)?.reverse();
+      requests?.forEach((req) => {
+        displayRequest(req);
+      });
+      onInputChanges(requests);
+    });
+  }
 });
 
 function clearDisplay() {

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Network Request Monitor",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "permissions": ["webRequest", "storage", "activeTab"],
   "host_permissions": ["<all_urls>"],
   "background": {
