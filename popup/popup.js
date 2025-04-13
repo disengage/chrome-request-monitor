@@ -30,8 +30,8 @@ document.getElementById("clear").addEventListener("click", () => {
 chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
   if (tabs.length > 0) {
     const tabId = tabs[0].id;
-    chrome.storage.local.get("requests", (data) => {
-      const requests = data.requests?.filter((req) => req.tabId === tabId)?.reverse();
+    chrome.storage.local.get(tabId.toString(), (data) => {
+      const requests = data[tabId]?.reverse(); // Access requests for the current tabId
       requests?.forEach((req) => {
         displayRequest(req);
       });
