@@ -14,7 +14,7 @@ chrome.webRequest.onCompleted.addListener(
         requests[details.tabId] = [];
       }
       requests[details.tabId].push(details);
-      chrome.storage.local.set({ requests: requests[details.tabId] });
+      chrome.storage.local.set({ [details.tabId]: requests[details.tabId] });
     }
   },
   { urls: ["<all_urls>"] }
@@ -24,6 +24,15 @@ chrome.webRequest.onCompleted.addListener(
 chrome.runtime.onMessage.addListener((msg, sender, respond) => {
   if (msg.action === "clear" && msg.tabId >= 0) {
     requests[msg.tabId] = [];
-    chrome.storage.local.set({ requests: [] });
+    chrome.storage.local.remove(msg.tabId.toString());
+  }
+});
+
+// Remove tab data when a tab is closed
+chrome.tabs.onRemoved.addListener((tabId) => {
+  if (requests[tabId]) {
+    delete requests[tabId];
+    chrome.storage.local.remove(tabId.toString());
+    console.log(`Removed data for tabId: ${tabId}`);
   }
 });
