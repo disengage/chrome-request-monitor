@@ -87,8 +87,8 @@ function onInputChanges(requests) {
       const filtered = requests?.filter((request) =>
         request.url.includes(text)
       );
-      filtered.map((req) => displayRequest(req));
-      filtered.length == 0 && displayEmpty();
+      filtered?.map((req) => displayRequest(req));
+      filtered?.length == 0 && displayEmpty();
     }
   });
 }
