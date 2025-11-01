@@ -73,6 +73,42 @@ body {
   animation: fadeOut 2s forwards;
 }
 
+#recent {
+  margin-bottom: 8px;
+}
+
+#recent.hidden {
+  display: none;
+}
+
+#recent > label {
+  border: 1px solid darkblue;
+  background-color: lightblue;
+  padding: 2px 26px 2px 6px;
+  border-radius: 6px;
+  position: relative;
+  margin-right: 6px;
+}
+
+#recent .delete::after {
+  content: "x";
+}
+
+#recent .delete {
+  cursor: pointer;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  height: 100%;
+  color: darkgrey;
+  width: 20px;
+  text-align: center;
+}
+
+#recent .delete:hover {
+  color: black;
+}
+
 @keyframes fadeOut {
   from {
     opacity: 1;
