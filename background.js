@@ -23,10 +23,8 @@ chrome.webRequest.onCompleted.addListener(
 
 // Clear logs on demand
 chrome.runtime.onMessage.addListener((msg, sender, respond) => {
-  let tabId = `${msg.tabId}`;
   if (msg.action === "clear") {
-    requests[tabId] = [];
-    chrome.storage.local.remove(tabId);
+    clearRequests(`${msg.tabId}`);
   }
 });
 
@@ -34,11 +32,15 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
 chrome.tabs.onRemoved.addListener((tabId) => {
   tabId = `${tabId}`;
   if (requests[tabId]) {
-    delete requests[tabId];
-    chrome.storage.local.remove(tabId);
-    console.log(`Removed data for tabId: ${tabId}`);
+    clearRequests(tabId);
   }
 });
+
+function clearRequests(tabId) {
+  delete requests[tabId];
+  chrome.storage.local.remove(tabId);
+  console.log(`Removed data for tabId: ${tabId}`);
+}
 
 async function getAllStorageKeys() {
   const items = await chrome.storage.local.get(null);
