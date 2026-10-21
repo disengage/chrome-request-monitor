@@ -24,7 +24,7 @@ chrome.webRequest.onCompleted.addListener(
 // Clear logs on demand
 chrome.runtime.onMessage.addListener((msg, sender, respond) => {
   let tabId = `${msg.tabId}`;
-  if (msg.action === "clear" && tabId >= 0) {
+  if (msg.action === "clear") {
     requests[tabId] = [];
     chrome.storage.local.remove(tabId);
   }
