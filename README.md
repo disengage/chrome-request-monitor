@@ -8,7 +8,8 @@ Chrome extension (Manifest V3) that captures completed network requests for the 
 - Popup list of requests (`METHOD - URL`), newest first
 - Click a request to copy its URL (toast: `Copies!!!`)
 - Live URL filter
-- Recent search chips (apply / delete; newest keyword auto-applied on open)
+- Recent search chips (apply / delete)
+- Last search is restored on open only if it still matches requests; otherwise the popup starts unfiltered
 - Clear logs for the current tab
 - Live title count of visible requests
 - **By Domain** summary with request counts and favicons
@@ -36,7 +37,8 @@ Chrome extension (Manifest V3) that captures completed network requests for the 
 ```
 ├── manifest.json
 ├── background.js          # webRequest listener + storage
-├── content-script.js      # fetch logging helper
+├── docs/
+│   └── index.html         # privacy policy page
 ├── icons/
 └── popup/
     ├── popup.html
@@ -49,10 +51,17 @@ Chrome extension (Manifest V3) that captures completed network requests for the 
 - `webRequest` — observe completed network requests
 - `storage` — persist per-tab request logs and recent searches
 - `activeTab` — resolve the current tab
-- `<all_urls>` — monitor requests / load favicons across sites
+- `<all_urls>` (host permission) — required by `webRequest` to observe requests on any site
+
+The extension does not inject content scripts into web pages.
+
+## Privacy
+
+All captured data stays in `chrome.storage.local` on your device; nothing is sent to the developer or any analytics service. See the [privacy policy](docs/index.html), which can be published with GitHub Pages from the `docs/` folder.
 
 ## Notes
 
 - Data is scoped by `tabId` and cleared when the tab is closed
+- Only the URL, method, and frame ID of each request are stored
 - `chrome-extension://` URLs are ignored
 - Favicons use Google’s favicon service for the request hostname

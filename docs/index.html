@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Privacy Policy – Network Request Monitor</title>
+    <meta
+      name="description"
+      content="Privacy policy for the Network Request Monitor Chrome extension."
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #111214;
+        --surface: #18191c;
+        --border: #2a2b30;
+        --text: #f1f1f3;
+        --text-2: #b4b5bd;
+        --muted: #7d7e88;
+        --accent: #5b8cff;
+        --accent-soft: rgba(91, 140, 255, 0.12);
+        --font: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text",
+          "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+          "Liberation Mono", monospace;
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root {
+          color-scheme: light;
+          --bg: #f4f5f7;
+          --surface: #ffffff;
+          --border: #e2e4e9;
+          --text: #15171c;
+          --text-2: #3d414b;
+          --muted: #6b7080;
+          --accent: #2a5fe0;
+          --accent-soft: rgba(42, 95, 224, 0.1);
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text-2);
+        font-family: var(--font);
+        font-size: 16px;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      main {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 56px 24px 72px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 8px;
+      }
+
+      header img {
+        width: 40px;
+        height: 40px;
+      }
+
+      h1 {
+        margin: 0;
+        color: var(--text);
+        font-size: 28px;
+        line-height: 1.25;
+        letter-spacing: -0.01em;
+      }
+
+      .updated {
+        margin: 0 0 32px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .summary {
+        margin: 0 0 40px;
+        padding: 18px 20px;
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--accent);
+        border-radius: 10px;
+        background: var(--surface);
+        color: var(--text);
+      }
+
+      h2 {
+        margin: 40px 0 12px;
+        color: var(--text);
+        font-size: 20px;
+        line-height: 1.3;
+      }
+
+      p,
+      ul {
+        margin: 0 0 14px;
+      }
+
+      ul {
+        padding-left: 22px;
+      }
+
+      li + li {
+        margin-top: 6px;
+      }
+
+      strong {
+        color: var(--text);
+      }
+
+      code {
+        padding: 1px 6px;
+        border-radius: 6px;
+        background: var(--accent-soft);
+        color: var(--text);
+        font-family: var(--font-mono);
+        font-size: 14px;
+      }
+
+      a {
+        color: var(--accent);
+        text-underline-offset: 3px;
+      }
+
+      footer {
+        margin-top: 56px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <img src="icon.png" alt="" />
+        <h1>Network Request Monitor – Privacy Policy</h1>
+      </header>
+      <p class="updated">Last updated: November 2, 2026</p>
+
+      <p class="summary">
+        Network Request Monitor stores everything it records locally in your
+        browser. It does not send your data to the developer, sell it, or
+        share it with analytics or advertising services.
+      </p>
+
+      <h2>What the extension does</h2>
+      <p>
+        Network Request Monitor is a developer tool that records the network
+        requests made by each browser tab and lists them for the tab you are
+        viewing. You can filter the list, copy request URLs, and see requests
+        grouped by domain.
+      </p>
+
+      <h2>Data the extension handles</h2>
+      <ul>
+        <li>
+          <strong>Request details:</strong> for each completed network
+          request in a tab, the extension records the request URL, the HTTP
+          method (such as <code>GET</code> or <code>POST</code>), the frame ID,
+          and the ID of the tab. It does not read request or response bodies,
+          headers, cookies, or form data.
+        </li>
+        <li>
+          <strong>Search keywords:</strong> the keywords you use to filter the
+          list, so recent searches can be shown as shortcuts and your last
+          search can be restored when you reopen the popup.
+        </li>
+      </ul>
+      <p>
+        The extension does not collect personally identifiable information,
+        and it does not inject scripts into the web pages you visit.
+      </p>
+
+      <h2>Where data is stored</h2>
+      <p>
+        All data is saved with <code>chrome.storage.local</code> on your
+        device. It is not synced to your Google account and is not uploaded
+        to any server operated by the developer.
+      </p>
+
+      <h2>How long data is kept</h2>
+      <ul>
+        <li>Requests for a tab are deleted when you close that tab.</li>
+        <li>
+          You can delete the requests for the current tab at any time with
+          <strong>Clear Logs</strong>.
+        </li>
+        <li>
+          Data for tabs that no longer exist is removed when a new browser
+          window is opened.
+        </li>
+        <li>
+          Recent search keywords stay until you remove them from the popup.
+          Your last search is discarded when it no longer matches any request.
+        </li>
+        <li>Uninstalling the extension deletes all of its stored data.</li>
+      </ul>
+
+      <h2>Third-party services</h2>
+      <p>
+        To show website icons in the <strong>By Domain</strong> view, the
+        popup loads favicons from Google's public favicon service
+        (<code>https://www.google.com/s2/favicons</code>). This sends the
+        domain name (for example, <code>example.com</code>) to Google, not
+        the full URL. These requests are subject to the
+        <a href="https://policies.google.com/privacy" rel="noopener"
+          >Google Privacy Policy</a
+        >. No other third-party services are used.
+      </p>
+
+      <h2>Permissions</h2>
+      <ul>
+        <li>
+          <code>webRequest</code> – to see which network requests a tab has
+          made.
+        </li>
+        <li>
+          <code>storage</code> – to save the request list and search keywords
+          on your device.
+        </li>
+        <li>
+          <code>activeTab</code> – to find the tab you are viewing when you
+          open the popup.
+        </li>
+        <li>
+          Host permission <code>&lt;all_urls&gt;</code> – required by
+          <code>webRequest</code> to see the requests made on the websites you
+          visit. It is not used to read or change page content.
+        </li>
+      </ul>
+
+      <h2>Limited Use</h2>
+      <p>
+        The use of information received from Chrome APIs complies with the
+        <a
+          href="https://developer.chrome.com/docs/webstore/program-policies/limited-use"
+          rel="noopener"
+          >Chrome Web Store User Data Policy</a
+        >, including the Limited Use requirements. Data is used only to
+        provide the extension's features and is never sold, transferred,
+        or used for advertising or creditworthiness purposes.
+      </p>
+
+      <h2>Changes to this policy</h2>
+      <p>
+        If this policy changes, the updated version will be published on this
+        page with a new "Last updated" date.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions or concerns can be raised by opening an issue at
+        <a
+          href="https://github.com/disengage/chrome-request-monitor/issues"
+          rel="noopener"
+          >github.com/disengage/chrome-request-monitor</a
+        >.
+      </p>
+
+      <footer>© 2026 Network Request Monitor</footer>
+    </main>
+  </body>
+</html>
