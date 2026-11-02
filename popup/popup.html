@@ -1,33 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
     <div class="pager">
       <div class="pager-track" id="pager_track">
         <div class="page page-main" id="page_main">
-          <div id="header">
-            <h1 id="title">Network Requests</h1>
-            <button type="button" id="clear">Clear Logs</button>
-          </div>
-          <div id="recent" class="hidden"></div>
+          <header id="header">
+            <div class="brand">
+              <img class="brand-logo" src="../icons/icon32.png" alt="" width="20" height="20" />
+              <h1 id="title">Network Requests</h1>
+            </div>
+            <button type="button" id="clear" class="btn btn-ghost">
+              <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                <path
+                  d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.1c.04.5.46.9.96.9h3.88c.5 0 .92-.4.96-.9l.6-8.1"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Clear Logs
+            </button>
+          </header>
+
           <div id="search">
-            <label for="search_input">Filter</label>
+            <label for="search_input" class="sr-only">Filter</label>
+            <svg class="search-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+              <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5" />
+              <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
             <input
               type="text"
               id="search_input"
-              placeholder="Search item here"
+              placeholder="Filter by URL…"
+              autocomplete="off"
+              spellcheck="false"
             />
           </div>
+
+          <div id="recent" class="hidden"></div>
+
           <div id="requests"></div>
+
           <section id="domains_section" aria-label="Requests by domain">
             <button
               type="button"
@@ -42,21 +61,32 @@
             <div id="domains"></div>
           </section>
         </div>
+
         <div class="page page-domain" id="page_domain">
-          <div id="domain_header">
-            <button type="button" id="domain_back" aria-label="Back">
-              ← Back
+          <header id="domain_header">
+            <button type="button" id="domain_back" class="btn btn-ghost" aria-label="Back">
+              <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                <path
+                  d="M10 3.5 5.5 8l4.5 4.5"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Back
             </button>
             <div id="domain_title_wrap">
               <img id="domain_favicon" alt="" width="16" height="16" hidden />
               <h1 id="domain_title">Domain</h1>
             </div>
-          </div>
+          </header>
           <div id="domain_requests"></div>
         </div>
       </div>
     </div>
-    <div class="status" id="status"></div>
+    <div class="status" id="status" role="status"></div>
     <script src="popup.js"></script>
   </body>
 </html>
