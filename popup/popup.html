@@ -1,19 +1,61 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
-    <div id="header">
-      <h1 id="title">Network Requests</h1>
-      <button id="clear">Clear Logs</button>
+    <div class="pager">
+      <div class="pager-track" id="pager_track">
+        <div class="page page-main" id="page_main">
+          <div id="header">
+            <h1 id="title">Network Requests</h1>
+            <button type="button" id="clear">Clear Logs</button>
+          </div>
+          <div id="recent" class="hidden"></div>
+          <div id="search">
+            <label for="search_input">Filter</label>
+            <input
+              type="text"
+              id="search_input"
+              placeholder="Search item here"
+            />
+          </div>
+          <div id="requests"></div>
+          <section id="domains_section" aria-label="Requests by domain">
+            <button
+              type="button"
+              class="section-header"
+              id="domains_toggle"
+              aria-expanded="false"
+              aria-controls="domains"
+            >
+              <h2 class="section-title">By Domain</h2>
+              <span class="section-arrow" aria-hidden="true"></span>
+            </button>
+            <div id="domains"></div>
+          </section>
+        </div>
+        <div class="page page-domain" id="page_domain">
+          <div id="domain_header">
+            <button type="button" id="domain_back" aria-label="Back">
+              ← Back
+            </button>
+            <div id="domain_title_wrap">
+              <img id="domain_favicon" alt="" width="16" height="16" hidden />
+              <h1 id="domain_title">Domain</h1>
+            </div>
+          </div>
+          <div id="domain_requests"></div>
+        </div>
+      </div>
     </div>
-    <div id="recent"></div>
-    <div id="search">
-      <label>Filter</label>
-      <input type="text" id="search_input" placeholder="Search item here" />
-    </div>
-    <div id="requests"></div>
     <div class="status" id="status"></div>
     <script src="popup.js"></script>
   </body>
