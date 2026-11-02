@@ -1,4 +1,21 @@
 const requests = {};
+const pendingWrites = new Map();
+const WRITE_DELAY_MS = 250;
+
+function scheduleWrite(tabId) {
+  if (pendingWrites.has(tabId)) {
+    return;
+  }
+  pendingWrites.set(
+    tabId,
+    setTimeout(() => {
+      pendingWrites.delete(tabId);
+      if (requests[tabId]) {
+        chrome.storage.local.set({ [tabId]: requests[tabId] });
+      }
+    }, WRITE_DELAY_MS),
+  );
+}
 
 // Monitor all network requests
 chrome.webRequest.onCompleted.addListener(
@@ -14,8 +31,12 @@ chrome.webRequest.onCompleted.addListener(
       if (!requests[tabId]) {
         requests[tabId] = [];
       }
-      requests[tabId].push(details);
-      chrome.storage.local.set({ [tabId]: requests[tabId] });
+      requests[tabId].push({
+        url: details.url,
+        method: details.method,
+        frameId: details.frameId,
+      });
+      scheduleWrite(tabId);
     }
   },
   { urls: ["<all_urls>"] },
@@ -37,6 +58,8 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 });
 
 function clearRequests(tabId) {
+  clearTimeout(pendingWrites.get(tabId));
+  pendingWrites.delete(tabId);
   delete requests[tabId];
   chrome.storage.local.remove(tabId);
   console.log(`Removed data for tabId: ${tabId}`);
@@ -57,7 +80,9 @@ function removeUnactiveTabs() {
     });
     allTabIds = Array.from(new Set(allTabIds));
     const keys = await getAllStorageKeys();
-    let diffKeys = keys.filter((key) => !allTabIds.includes(key));
+    let diffKeys = keys.filter(
+      (key) => /^\d+$/.test(key) && !allTabIds.includes(key),
+    );
     if (diffKeys.length > 0) {
       diffKeys.forEach((tabId) => clearRequests(tabId));
     }

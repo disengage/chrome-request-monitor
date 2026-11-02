@@ -11,12 +11,18 @@ const pagerTrack = document.getElementById("pager_track");
 const domainTitle = document.getElementById("domain_title");
 const domainFavicon = document.getElementById("domain_favicon");
 const titleText = `Network Requests`;
+const LAST_SEARCH_KEY = "last_search";
+const FIRST_CHUNK = 150;
+const CHUNK_SIZE = 400;
 
 var requests = [];
 var currentTabId = null;
 var activeDomain = null;
-var inputListenerBound = false;
 var domainsOpen = false;
+var domainsDirty = true;
+var renderTokens = new WeakMap();
+var pendingRaw = null;
+var refreshScheduled = false;
 
 const copyToClipBoard = (text, callback) => {
   navigator.clipboard
@@ -52,9 +58,20 @@ function normalizeRequests(raw) {
   return [...raw].reverse();
 }
 
+function filterByKeyword(text) {
+  if (text === "") {
+    return requests;
+  }
+  return requests.filter((request) => request.url.includes(text));
+}
+
 function refreshMainViews() {
   updateDisplayByKeyword(input.value.trim());
-  displayDomains();
+  if (domainsOpen) {
+    displayDomains();
+  } else {
+    domainsDirty = true;
+  }
 }
 
 function applyRequestsFromStorage(raw) {
@@ -65,12 +82,39 @@ function applyRequestsFromStorage(raw) {
   }
 }
 
+function scheduleRequestsRefresh(raw) {
+  pendingRaw = raw;
+  if (refreshScheduled) {
+    return;
+  }
+  refreshScheduled = true;
+  requestAnimationFrame(() => {
+    refreshScheduled = false;
+    applyRequestsFromStorage(pendingRaw);
+    pendingRaw = null;
+  });
+}
+
+function saveSearch(text, matchCount) {
+  if (text !== "" && matchCount > 0) {
+    chrome.storage.local.set({ [LAST_SEARCH_KEY]: text });
+  } else {
+    chrome.storage.local.remove(LAST_SEARCH_KEY);
+  }
+}
+
+function applySearch(text) {
+  const count = updateDisplayByKeyword(text);
+  saveSearch(text, count);
+}
+
 document.getElementById("clear").addEventListener("click", () => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs.length > 0) {
       const tabId = tabs[0].id;
       requests = [];
       clearDisplay(list);
+      updateTitle(0);
       displayDomains();
       showMainPage();
       chrome.runtime.sendMessage({ action: "clear", tabId: tabId });
@@ -87,6 +131,9 @@ function setDomainsOpen(open) {
   domainsSection.classList.toggle("is-open", open);
   domainsToggle.setAttribute("aria-expanded", open ? "true" : "false");
   list.classList.toggle("is-hidden", open);
+  if (open && domainsDirty) {
+    displayDomains();
+  }
 }
 
 domainsToggle.addEventListener("click", () => {
@@ -95,26 +142,52 @@ domainsToggle.addEventListener("click", () => {
 
 setDomainsOpen(false);
 
-chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-  if (tabs.length > 0) {
-    currentTabId = tabs[0].id;
-    const tabKey = currentTabId.toString();
-    chrome.storage.local.get(tabKey, (data) => {
-      applyRequestsFromStorage(data[tabKey]);
-      onInputChanges();
-    });
-    chrome.storage.local.get("recent_search", (data) => {
-      let recentSearch = data["recent_search"] || [];
-      recentSearch = recentSearch.reverse();
-      displayRecentSearch(recentSearch);
-      if (recentSearch.length > 0) {
-        let firstKeyword = recentSearch[0];
-        input.value = firstKeyword;
-        updateDisplayByKeyword(firstKeyword);
-      }
-    });
+function onRequestClick(event) {
+  const item = event.target.closest(".request-item");
+  if (!item) {
+    return;
   }
+  copyToClipBoard(item.getAttribute("data-url"));
+  displayStatus("Copies!!!");
+  addKeywordToRecent(input.value);
+}
+
+list.addEventListener("click", onRequestClick);
+domainList.addEventListener("click", onRequestClick);
+
+input.addEventListener("input", (event) => {
+  applySearch(event.target.value.trim());
 });
+
+async function init() {
+  const [tabs, prefs] = await Promise.all([
+    chrome.tabs.query({ active: true, currentWindow: true }),
+    chrome.storage.local.get(["recent_search", LAST_SEARCH_KEY]),
+  ]);
+
+  const recentSearch = (prefs["recent_search"] || []).reverse();
+  displayRecentSearch(recentSearch);
+
+  if (tabs.length === 0) {
+    return;
+  }
+  currentTabId = tabs[0].id;
+  const tabKey = currentTabId.toString();
+  const data = await chrome.storage.local.get(tabKey);
+  requests = normalizeRequests(data[tabKey]);
+
+  const lastSearch = prefs[LAST_SEARCH_KEY] || "";
+  input.value = lastSearch;
+  const count = updateDisplayByKeyword(lastSearch);
+  if (lastSearch !== "" && count === 0) {
+    input.value = "";
+    chrome.storage.local.remove(LAST_SEARCH_KEY);
+    updateDisplayByKeyword("");
+  }
+  domainsDirty = true;
+}
+
+init();
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName !== "local" || currentTabId == null) {
@@ -124,13 +197,12 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
   if (!changes[tabKey]) {
     return;
   }
-  applyRequestsFromStorage(changes[tabKey].newValue);
+  scheduleRequestsRefresh(changes[tabKey].newValue);
 });
 
 function clearDisplay(target = list) {
-  while (target.hasChildNodes()) {
-    target.removeChild(target.firstChild);
-  }
+  renderTokens.set(target, {});
+  target.replaceChildren();
 }
 
 function displayStatus(text) {
@@ -144,19 +216,37 @@ function displayStatus(text) {
   }, 1000);
 }
 
-function displayRequest(req, target = list) {
+function createRequestItem(req) {
   const item = document.createElement("div");
   item.classList.add("request-item");
   item.setAttribute("data-frame-id", req.frameId);
   item.setAttribute("data-url", req.url);
   item.setAttribute("data-method", req.method);
   item.textContent = `${req.method} - ${req.url}`;
-  item.addEventListener("click", () => {
-    copyToClipBoard(req.url);
-    displayStatus("Copies!!!");
-    addKeywordToRecent(input.value);
-  });
-  target.appendChild(item);
+  return item;
+}
+
+function buildFragment(items) {
+  const fragment = document.createDocumentFragment();
+  items.forEach((req) => fragment.appendChild(createRequestItem(req)));
+  return fragment;
+}
+
+function renderRequestList(target, items) {
+  const token = {};
+  renderTokens.set(target, token);
+  target.replaceChildren(buildFragment(items.slice(0, FIRST_CHUNK)));
+
+  let index = FIRST_CHUNK;
+  const appendNextChunk = () => {
+    if (renderTokens.get(target) !== token || index >= items.length) {
+      return;
+    }
+    target.appendChild(buildFragment(items.slice(index, index + CHUNK_SIZE)));
+    index += CHUNK_SIZE;
+    setTimeout(appendNextChunk, 0);
+  };
+  setTimeout(appendNextChunk, 0);
 }
 
 function displayEmpty(target = list) {
@@ -182,6 +272,7 @@ function aggregateDomains(source) {
 }
 
 function displayDomains() {
+  domainsDirty = false;
   domainsEl.replaceChildren();
   const domains = aggregateDomains(requests);
   if (domains.length === 0) {
@@ -191,6 +282,7 @@ function displayDomains() {
     domainsEl.appendChild(empty);
     return;
   }
+  const fragment = document.createDocumentFragment();
   domains.forEach((domain) => {
     const row = document.createElement("div");
     row.classList.add("domain-row");
@@ -229,18 +321,19 @@ function displayDomains() {
       }
     });
 
-    domainsEl.appendChild(row);
+    fragment.appendChild(row);
   });
+  domainsEl.appendChild(fragment);
 }
 
 function renderDomainRequests(hostname) {
-  clearDisplay(domainList);
   const filtered = (requests || []).filter(
     (req) => getHostname(req.url) === hostname
   );
   if (filtered.length > 0) {
-    filtered.forEach((req) => displayRequest(req, domainList));
+    renderRequestList(domainList, filtered);
   } else {
+    clearDisplay(domainList);
     displayEmpty(domainList);
   }
   domainTitle.textContent = `${hostname} (${filtered.length})`;
@@ -277,7 +370,7 @@ function displayRecentSearch(recentSearch) {
       label.setAttribute("data-keyword", search);
       label.addEventListener("click", () => {
         input.value = search;
-        updateDisplayByKeyword(search);
+        applySearch(search);
       });
       const deleteBtn = document.createElement("label");
       deleteBtn.classList.add("delete");
@@ -316,50 +409,25 @@ function addKeywordToRecent(keyword) {
 }
 
 function updateDisplayByKeyword(text) {
-  clearDisplay(list);
   if (!requests || requests.length === 0) {
+    clearDisplay(list);
     if (text !== "") {
       displayEmpty(list);
     }
-    return;
+    updateTitle(0);
+    return 0;
   }
-  if (text == "") {
-    requests.map((req) => displayRequest(req));
+  const filtered = filterByKeyword(text);
+  if (filtered.length > 0) {
+    renderRequestList(list, filtered);
   } else {
-    const filtered = requests.filter((request) => request.url.includes(text));
-    if (filtered?.length > 0) {
-      filtered?.map((req) => displayRequest(req));
-    } else {
-      displayEmpty();
-    }
+    clearDisplay(list);
+    displayEmpty(list);
   }
+  updateTitle(filtered.length);
+  return filtered.length;
 }
 
-function onInputChanges() {
-  if (inputListenerBound) {
-    return;
-  }
-  inputListenerBound = true;
-  input.addEventListener("input", (event) => {
-    const text = event.target.value.trim();
-    updateDisplayByKeyword(text);
-  });
-}
-
-// Create an observer instance
-const observer = new MutationObserver(function (mutations) {
-  const childNodes = mutations[mutations.length - 1].target?.childNodes ?? [];
-  let count = childNodes.length;
-  if (count == 1) {
-    count = Array.from(childNodes).filter(
-      (div) => !div.classList.contains("empty_result")
-    ).length;
-  }
+function updateTitle(count) {
   title.innerText = count ? `${titleText} (${count})` : titleText;
-}).observe(list, {
-  attributes: true,
-  childList: true,
-  characterData: true,
-  // This option allows you to listen to all descendants of body
-  subtree: true,
-});
+}
