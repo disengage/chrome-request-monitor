@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Network Request Monitor — store screenshots</title>
+    <link rel="stylesheet" href="shot.css" />
+  </head>
+  <body>
+    <section class="slide" id="s1">
+      <div class="brandline">
+        <img src="../icons/icon32.png" alt="" />
+        <span>Network Request Monitor</span>
+        <span class="num">01</span>
+      </div>
+      <div class="copy">
+        <p class="eyebrow">Capture</p>
+        <h1>Every request<br />on the active tab.</h1>
+        <p class="lede">
+          Completed requests are listed newest first, with a method badge and the full URL.
+          The count in the title follows the list, and new requests appear while the popup stays open.
+        </p>
+        <ul class="points">
+          <li><span class="n">01</span>Clear Logs wipes this tab only</li>
+          <li><span class="n">02</span>Closing the tab clears its log</li>
+          <li><span class="n">03</span>Click a row to copy the URL</li>
+        </ul>
+        <p class="foot">Kept in chrome.storage.local on your device.</p>
+      </div>
+      <div class="visual">
+        <div class="clip"><iframe src="frame.html?view=list" scrolling="no" title="Request list"></iframe></div>
+      </div>
+    </section>
+
+    <section class="slide" id="s2">
+      <div class="brandline">
+        <img src="../icons/icon32.png" alt="" />
+        <span>Network Request Monitor</span>
+        <span class="num">02</span>
+      </div>
+      <div class="copy">
+        <p class="eyebrow">Quick filters</p>
+        <h1>APIs, assets,<br />or errors.</h1>
+        <p class="lede">
+          Three chips under the search box swipe into a focused list, on top of whatever URL filter is already typed. Back returns to the full tab.
+        </p>
+        <div class="legend">
+          <div class="row row-api">
+            <span class="pill">API Requests</span>
+            <p>XHR, WebSocket, and /api, /graphql, or /vN URLs.</p>
+          </div>
+          <div class="row row-asset">
+            <span class="pill">Web Assets</span>
+            <p>Scripts, styles, images, fonts, media, and those file types.</p>
+          </div>
+          <div class="row row-err">
+            <span class="pill">Error (5xx,4xx)</span>
+            <p>Completed requests whose status is 400–599.</p>
+          </div>
+        </div>
+        <p class="foot">The list on the right is API Requests.</p>
+      </div>
+      <div class="visual">
+        <div class="clip"><iframe src="frame.html?view=api" scrolling="no" title="API Requests"></iframe></div>
+      </div>
+    </section>
+
+    <section class="slide" id="s3">
+      <div class="brandline">
+        <img src="../icons/icon32.png" alt="" />
+        <span>Network Request Monitor</span>
+        <span class="num">03</span>
+      </div>
+      <div class="copy">
+        <p class="eyebrow">Filter</p>
+        <h1>Narrow the list<br />as you type.</h1>
+        <p class="lede">
+          The URL filter is live, and the title count updates with it. Recent searches stay on chips — click to apply, × to delete. The last search is restored only when it still matches.
+        </p>
+        <ul class="points">
+          <li><span class="n">01</span>Matches any part of the URL</li>
+          <li><span class="n">02</span>Recent chips, apply or delete</li>
+          <li><span class="n">03</span>Last search returns when it still matches</li>
+        </ul>
+        <p class="foot">Kept in chrome.storage.local on your device.</p>
+      </div>
+      <div class="visual">
+        <div class="clip"><iframe src="frame.html?view=filter" scrolling="no" title="URL filter"></iframe></div>
+      </div>
+    </section>
+
+    <section class="slide" id="s4">
+      <div class="brandline">
+        <img src="../icons/icon32.png" alt="" />
+        <span>Network Request Monitor</span>
+        <span class="num">04</span>
+      </div>
+      <div class="copy">
+        <p class="eyebrow">By domain</p>
+        <h1>Which hosts<br />this page called.</h1>
+        <p class="lede">
+          By Domain groups the current tab by hostname, busiest first, with a favicon and a count. Click a row to open just that host.
+        </p>
+        <ul class="points">
+          <li><span class="n">01</span>Favicon and request count</li>
+          <li><span class="n">02</span>Follows the current URL filter</li>
+          <li><span class="n">03</span>Click through, then Back</li>
+        </ul>
+        <p class="foot">Kept in chrome.storage.local on your device.</p>
+      </div>
+      <div class="visual">
+        <div class="clip"><iframe src="frame.html?view=domains" scrolling="no" title="By domain"></iframe></div>
+      </div>
+    </section>
+
+    <section class="slide" id="s5">
+      <div class="brandline">
+        <img src="../icons/icon32.png" alt="" />
+        <span>Network Request Monitor</span>
+        <span class="num">05</span>
+      </div>
+      <div class="copy">
+        <p class="eyebrow">Copy</p>
+        <h1>Click a row.<br />The URL is copied.</h1>
+        <p class="lede">
+          On the main list or inside a domain, one click copies the full URL. A toast confirms it. Back leaves the host and returns to every request on the tab.
+        </p>
+        <ul class="points">
+          <li><span class="n">01</span>Copies the full URL</li>
+          <li><span class="n">02</span>Toast reads Copies!!!</li>
+          <li><span class="n">03</span>Back returns to the main view</li>
+        </ul>
+        <p class="foot">Kept in chrome.storage.local on your device.</p>
+      </div>
+      <div class="visual">
+        <div class="clip"><iframe src="frame.html?view=domain" scrolling="no" title="Copy URL"></iframe></div>
+      </div>
+    </section>
+
+    <script>
+      const n = new URLSearchParams(location.search).get("slide") || "1";
+      const slide = document.getElementById("s" + n);
+      if (slide) slide.classList.add("on");
+    </script>
+  </body>
+</html>

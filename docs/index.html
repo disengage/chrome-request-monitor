@@ -149,7 +149,7 @@
         <img src="icon.png" alt="" />
         <h1>Network Request Monitor – Privacy Policy</h1>
       </header>
-      <p class="updated">Last updated: November 2, 2026</p>
+      <p class="updated">Last updated: November 4, 2026</p>
 
       <p class="summary">
         Network Request Monitor stores everything it records locally in your
@@ -161,7 +161,8 @@
       <p>
         Network Request Monitor is a developer tool that records the network
         requests made by each browser tab and lists them for the tab you are
-        viewing. You can filter the list, copy request URLs, and see requests
+        viewing. You can filter the list by URL, open API requests, web
+        assets, or error responses, copy request URLs, and see requests
         grouped by domain.
       </p>
 
@@ -171,8 +172,12 @@
           <strong>Request details:</strong> for each completed network
           request in a tab, the extension records the request URL, the HTTP
           method (such as <code>GET</code> or <code>POST</code>), the frame ID,
-          and the ID of the tab. It does not read request or response bodies,
-          headers, cookies, or form data.
+          the HTTP status code, and the resource type (such as
+          <code>xmlhttprequest</code> or <code>image</code>). Requests are
+          stored under the ID of the tab. The status code and resource type
+          are used to group API requests, web assets, and error responses.
+          The extension does not read request or response bodies, headers,
+          cookies, or form data.
         </li>
         <li>
           <strong>Search keywords:</strong> the keywords you use to filter the

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      document.documentElement.dataset.view =
+        new URLSearchParams(location.search).get("view") || "list";
+    </script>
+    <link rel="stylesheet" href="../popup/popup.css" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #111214;
+        --surface: #18191c;
+        --surface-2: #1f2024;
+        --hover: #26272c;
+        --border: #2a2b30;
+        --border-strong: #3a3b42;
+        --text: #f1f1f3;
+        --text-2: #b4b5bd;
+        --muted: #7d7e88;
+        --accent: #5b8cff;
+        --accent-hover: #7aa2ff;
+        --accent-soft: rgba(91, 140, 255, 0.12);
+        --accent-ring: rgba(91, 140, 255, 0.35);
+        --danger: #ff6b6b;
+        --danger-soft: rgba(255, 107, 107, 0.12);
+        --asset: #2dd4bf;
+        --asset-soft: rgba(45, 212, 191, 0.12);
+        --toast-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+      }
+
+      html,
+      body {
+        width: 420px;
+        height: 600px;
+        overflow: hidden;
+        background: var(--bg);
+      }
+
+      .view {
+        display: none;
+        height: 600px;
+      }
+
+      html[data-view="list"] .view-list,
+      html[data-view="filter"] .view-filter,
+      html[data-view="domains"] .view-domains,
+      html[data-view="domain"] .view-domain,
+      html[data-view="api"] .view-api {
+        display: block;
+      }
+
+      html[data-view="filter"] #search_input {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-ring);
+      }
+
+      html[data-view="filter"] .search-icon {
+        color: var(--accent);
+      }
+
+      .request-item.is-hot {
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+
+      .request-item.is-hot::before,
+      .request-item.is-hot + .request-item::before {
+        background: transparent;
+      }
+
+      .domain-row.is-hot {
+        background: var(--hover);
+      }
+
+      .domain-row.is-hot .domain-count {
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <template id="main-chrome">
+      <header id="header">
+        <div class="brand">
+          <img class="brand-logo" src="../icons/icon32.png" alt="" width="20" height="20" />
+          <h1 id="title">Network Requests</h1>
+        </div>
+        <button type="button" class="btn btn-ghost">
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+            <path
+              d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.1c.04.5.46.9.96.9h3.88c.5 0 .92-.4.96-.9l.6-8.1"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          Clear Logs
+        </button>
+      </header>
+    </template>
+
+    <div class="view view-list">
+      <div class="pager">
+        <div class="pager-track">
+          <div class="page page-main">
+            <header id="header">
+              <div class="brand">
+                <img class="brand-logo" src="../icons/icon32.png" alt="" width="20" height="20" />
+                <h1 id="title">Network Requests (844)</h1>
+              </div>
+              <button type="button" class="btn btn-ghost">
+                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                  <path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.1c.04.5.46.9.96.9h3.88c.5 0 .92-.4.96-.9l.6-8.1" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Clear Logs
+              </button>
+            </header>
+            <div id="search">
+              <svg class="search-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5" />
+                <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+              <input id="search_input" type="text" placeholder="Filter by URL…" readonly />
+            </div>
+            <div id="quick_filters">
+              <button type="button" class="filter-chip">API Requests</button>
+              <button type="button" class="filter-chip">Web Assets</button>
+              <button type="button" class="filter-chip">Error (5xx,4xx)</button>
+            </div>
+            <div id="requests">
+              <div class="request-item"><span class="method-badge method-post">POST</span><span class="request-url">https://collector.github.com/github/collect</span></div>
+              <div class="request-item"><span class="method-badge method-post">POST</span><span class="request-url">https://api.github.com/_private/browser/stats?service=ui</span></div>
+              <div class="request-item"><span class="method-badge method-post">POST</span><span class="request-url">https://collector.github.com/github/collect</span></div>
+              <div class="request-item"><span class="method-badge method-get">GET</span><span class="request-url">https://github.githubassets.com/favicons/favicon-dark.png</span></div>
+              <div class="request-item"><span class="method-badge method-get">GET</span><span class="request-url">https://github.githubassets.com/favicons/favicon-dark.svg</span></div>
+              <div class="request-item"><span class="method-badge method-get">GET</span><span class="request-url">https://avatars.githubusercontent.com/u/795076?v=4&amp;size=64</span></div>
+              <div class="request-item"><span class="method-badge method-get">GET</span><span class="request-url">https://avatars.githubusercontent.com/u/795076?s=64&amp;v=4</span></div>
+              <div class="request-item"><span class="method-badge method-get">GET</span><span class="request-url">https://avatars.githubusercontent.com/u/795076?v=4&amp;size=40</span></div>
+              <div class="request-item"><span class="method-badge method-get">GET</span><span class="request-url">https://avatars.githubusercontent.com/u/795076?s=60&amp;v=4</span></div>
+              <div class="request-item"><span class="method-badge method-get">GET</span><span class="request-url">https://github.com/github/docs</span></div>
+              <div class="request-item"><span class="method-badge method-post">POST</span><span class="request-url">https://api.github.com/graphql</span></div>
+            </div>
+            <section id="domains_section">
+              <button type="button" class="section-header">
+                <h2 class="section-title">By Domain</h2>
+                <span class="section-arrow" aria-hidden="true"></span>
+              </button>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view view-filter">
+      <div class="pager">
+        <div class="pager-track">
+          <div class="page page-main">
+            <header id="header">
+              <div class="brand">
+                <img class="brand-logo" src="../icons/icon32.png" alt="" width="20" height="20" />
+                <h1 id="title">Network Requests (312)</h1>
+              </div>
+              <button type="button" class="btn btn-ghost">
+                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                  <path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.1c.04.5.46.9.96.9h3.88c.5 0 .92-.4.96-.9l.6-8.1" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Clear Logs
+              </button>
+            </header>
+            <div id="search">
+              <svg class="search-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5" />
+                <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+              <input id="search_input" type="text" value="api.github.com" readonly />
+            </div>
+            <div id="recent">
+              <label>collect<label class="delete"></label></label>
+              <label>favicon<label class="delete"></label></label>
+              <label>avatars<label class="delete"></label></label>
+            </div>
+            <div id="quick_filters">
+              <button type="button" class="filter-chip">API Requests</button>
+              <button type="button" class="filter-chip">Web Assets</button>
+              <button type="button" class="filter-chip">Error (5xx,4xx)</button>
+            </div>
+            <div id="requests">
+              <div class="request-item"><span class="method-badge method-post">POST</span><span class="request-url">https://api.github.com/_private/browser/stats?service=ui</span></div>
+              <div class="request-item"><span class="method-badge method-post">POST</span><span class="request-url">https://api.github.com/graphql</span></div>
+              <div class="request-item"><span class="method-badge method-get">GET</span><span class="request-url">https://api.github.com/user</span></div>
+              <div class="request-item"><span class="method-badge method-get">GET</span><span class="request-url">https://api.github.com/notifications</span></div>
+              <div class="request-item"><span class="method-badge method-put">PUT</span><span class="request-url">https://api.github.com/user/following</span></div>
+              <div class="request-item"><span class="method-badge method-delete">DELETE</span><span class="request-url">https://api.github.com/repos/github/docs/subscription</span></div>
+              <div class="request-item"><span class="method-badge method-get">GET</span><span class="request-url">https://api.github.com/repos/github/docs/commits?per_page=30</span></div>
+              <div class="request-item"><span class="method-badge method-patch">PATCH</span><span class="request-url">https://api.github.com/repos/github/docs/issues/4821</span></div>
+            </div>
+            <section id="domains_section">
+              <button type="button" class="section-header">
+                <h2 class="section-title">By Domain</h2>
+                <span class="section-arrow" aria-hidden="true"></span>
+              </button>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view view-domains">
+      <div class="pager">
+        <div class="pager-track">
+          <div class="page page-main">
+            <header id="header">
+              <div class="brand">
+                <img class="brand-logo" src="../icons/icon32.png" alt="" width="20" height="20" />
+                <h1 id="title">Network Requests (844)</h1>
+              </div>
+              <button type="button" class="btn btn-ghost">
+                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                  <path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.1c.04.5.46.9.96.9h3.88c.5 0 .92-.4.96-.9l.6-8.1" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Clear Logs
+              </button>
+            </header>
+            <div id="search">
+              <svg class="search-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5" />
+                <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+              <input id="search_input" type="text" placeholder="Filter by URL…" readonly />
+            </div>
+            <div id="quick_filters">
+              <button type="button" class="filter-chip">API Requests</button>
+              <button type="button" class="filter-chip">Web Assets</button>
+              <button type="button" class="filter-chip">Error (5xx,4xx)</button>
+            </div>
+            <div id="requests" class="is-hidden"></div>
+            <section id="domains_section" class="is-open">
+              <button type="button" class="section-header" aria-expanded="true">
+                <h2 class="section-title">By Domain</h2>
+                <span class="section-arrow" aria-hidden="true"></span>
+              </button>
+              <div id="domains">
+                <div class="domain-row is-hot"><img alt="" width="16" height="16" src="https://www.google.com/s2/favicons?domain=api.github.com&amp;sz=32" /><span class="domain-name">api.github.com</span><span class="domain-count">312</span></div>
+                <div class="domain-row"><img alt="" width="16" height="16" src="https://www.google.com/s2/favicons?domain=github.githubassets.com&amp;sz=32" /><span class="domain-name">github.githubassets.com</span><span class="domain-count">149</span></div>
+                <div class="domain-row"><img alt="" width="16" height="16" src="https://www.google.com/s2/favicons?domain=avatars.githubusercontent.com&amp;sz=32" /><span class="domain-name">avatars.githubusercontent.com</span><span class="domain-count">126</span></div>
+                <div class="domain-row"><img alt="" width="16" height="16" src="https://www.google.com/s2/favicons?domain=github.com&amp;sz=32" /><span class="domain-name">github.com</span><span class="domain-count">83</span></div>
+                <div class="domain-row"><img alt="" width="16" height="16" src="https://www.google.com/s2/favicons?domain=collector.github.com&amp;sz=32" /><span class="domain-name">collector.github.com</span><span class="domain-count">74</span></div>
+                <div class="domain-row"><img alt="" width="16" height="16" src="https://www.google.com/s2/favicons?domain=objects.githubusercontent.com&amp;sz=32" /><span class="domain-name">objects.githubusercontent.com</span><span class="domain-count">42</span></div>
+                <div class="domain-row"><img alt="" width="16" height="16" src="https://www.google.com/s2/favicons?domain=alive.github.com&amp;sz=32" /><span class="domain-name">alive.github.com</span><span class="domain-count">24</span></div>
+                <div class="domain-row"><img alt="" width="16" height="16" src="https://www.google.com/s2/favicons?domain=education.github.com&amp;sz=32" /><span class="domain-name">education.github.com</span><span class="domain-count">15</span></div>
+                <div class="domain-row"><img alt="" width="16" height="16" src="https://www.google.com/s2/favicons?domain=codeload.github.com&amp;sz=32" /><span class="domain-name">codeload.github.com</span><span class="domain-count">9</span></div>
+                <div class="domain-row"><img alt="" width="16" height="16" src="https://www.google.com/s2/favicons?domain=docs.github.com&amp;sz=32" /><span class="domain-name">docs.github.com</span><span class="domain-count">6</span></div>
+                <div class="domain-row"><img alt="" width="16" height="16" src="https://www.google.com/s2/favicons?domain=support.github.com&amp;sz=32" /><span class="domain-name">support.github.com</span><span class="domain-count">4</span></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view view-domain">
+      <div class="pager">
+        <div class="pager-track show-domain">
+          <div class="page page-main"></div>
+          <div class="page page-domain">
+            <header id="domain_header">
+              <button type="button" class="btn btn-ghost">
+                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                  <path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Back
+              </button>
+              <div id="domain_title_wrap">
+                <img id="domain_favicon" alt="" width="16" height="16" src="https://www.google.com/s2/favicons?domain=api.github.com&amp;sz=32" />
+                <h1 id="domain_title">api.github.com (312)</h1>
+              </div>
+            </header>
+            <div id="domain_requests">
+              <div class="request-item"><span class="method-badge method-post">POST</span><span class="request-url">https://api.github.com/_private/browser/stats?service=ui</span></div>
+              <div class="request-item is-hot"><span class="method-badge method-post">POST</span><span class="request-url">https://api.github.com/graphql</span></div>
+              <div class="request-item"><span class="method-badge method-get">GET</span><span class="request-url">https://api.github.com/user</span></div>
+              <div class="request-item"><span class="method-badge method-get">GET</span><span class="request-url">https://api.github.com/notifications</span></div>
+              <div class="request-item"><span class="method-badge method-put">PUT</span><span class="request-url">https://api.github.com/user/following</span></div>
+              <div class="request-item"><span class="method-badge method-get">GET</span><span class="request-url">https://api.github.com/repos/github/docs/commits?per_page=30</span></div>
+              <div class="request-item"><span class="method-badge method-patch">PATCH</span><span class="request-url">https://api.github.com/repos/github/docs/issues/4821</span></div>
+              <div class="request-item"><span class="method-badge method-delete">DELETE</span><span class="request-url">https://api.github.com/repos/github/docs/subscription</span></div>
+              <div class="request-item"><span class="method-badge method-get">GET</span><span class="request-url">https://api.github.com/users/github/orgs</span></div>
+              <div class="request-item"><span class="method-badge method-post">POST</span><span class="request-url">https://api.github.com/markdown</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="status" alt="success">Copies!!!</div>
+    </div>
+
+    <div class="view view-api">
+      <div class="pager">
+        <div class="pager-track show-domain">
+          <div class="page page-main"></div>
+          <div class="page page-domain">
+            <header id="domain_header">
+              <button type="button" class="btn btn-ghost">
+                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                  <path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Back
+              </button>
+              <div id="domain_title_wrap">
+                <h1 id="domain_title">API Requests (241)</h1>
+              </div>
+            </header>
+            <div id="domain_requests">
+              <div class="request-item"><span class="method-badge method-post">POST</span><span class="request-url">https://api.github.com/graphql</span></div>
+              <div class="request-item"><span class="method-badge method-post">POST</span><span class="request-url">https://api.github.com/_private/browser/stats?service=ui</span></div>
+              <div class="request-item"><span class="method-badge method-get">GET</span><span class="request-url">https://api.github.com/user</span></div>
+              <div class="request-item"><span class="method-badge method-get">GET</span><span class="request-url">https://api.github.com/notifications</span></div>
+              <div class="request-item"><span class="method-badge method-put">PUT</span><span class="request-url">https://api.github.com/user/following</span></div>
+              <div class="request-item"><span class="method-badge method-post">POST</span><span class="request-url">https://collector.github.com/github/collect</span></div>
+              <div class="request-item"><span class="method-badge method-delete">DELETE</span><span class="request-url">https://api.github.com/repos/github/docs/subscription</span></div>
+              <div class="request-item"><span class="method-badge method-get">GET</span><span class="request-url">https://api.github.com/repos/github/docs/commits?per_page=30</span></div>
+              <div class="request-item"><span class="method-badge method-patch">PATCH</span><span class="request-url">https://api.github.com/repos/github/docs/issues/4821</span></div>
+              <div class="request-item"><span class="method-badge method-options">OPTIONS</span><span class="request-url">https://api.github.com/repos/github/docs</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

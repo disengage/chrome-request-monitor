@@ -5,11 +5,15 @@ Chrome extension (Manifest V3) that captures completed network requests for the 
 ## Features
 
 - Capture completed requests per tab via `chrome.webRequest.onCompleted`
-- Popup list of requests (`METHOD - URL`), newest first
+- Popup list of requests, newest first, with a method badge and the URL
 - Click a request to copy its URL (toast: `Copies!!!`)
 - Live URL filter
 - Recent search chips (apply / delete)
 - Last search is restored on open only if it still matches requests; otherwise the popup starts unfiltered
+- **API Requests**, **Web Assets**, and **Error (5xx,4xx)** use the same swipe and **Back** control as a domain, and they respect the current URL filter
+  - **API Requests** — XHR, WebSocket, and non-asset URLs under `/api`, `/graphql`, `/gql`, or `/vN`
+  - **Web Assets** — scripts, styles, images, fonts, media, and those file types
+  - **Error (5xx,4xx)** — completed requests with status 400–599
 - Clear logs for the current tab
 - Live title count of visible requests
 - **By Domain** summary with request counts and favicons
@@ -28,8 +32,8 @@ Chrome extension (Manifest V3) that captures completed network requests for the 
 
 1. Browse normally — requests for that tab are recorded in the background
 2. Open the popup to inspect the current tab’s requests
-3. Use **Filter** or recent chips to narrow the list
-4. Scroll to **By Domain**, click a domain to drill in, then **← Back**
+3. Use the URL filter, recent chips, or **API Requests** / **Web Assets** / **Error (5xx,4xx)** to narrow the list
+4. Scroll to **By Domain**, click a domain to drill in, then **← Back** (the same Back control leaves a quick filter)
 5. Use **Clear Logs** to wipe data for the current tab
 
 ## Project structure
@@ -62,6 +66,6 @@ All captured data stays in `chrome.storage.local` on your device; nothing is sen
 ## Notes
 
 - Data is scoped by `tabId` and cleared when the tab is closed
-- Only the URL, method, and frame ID of each request are stored
+- Each request stores the URL, method, frame ID, status code, and resource type
 - `chrome-extension://` URLs are ignored
 - Favicons use Google’s favicon service for the request hostname
