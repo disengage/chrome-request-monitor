@@ -35,6 +35,8 @@ chrome.webRequest.onCompleted.addListener(
         url: details.url,
         method: details.method,
         frameId: details.frameId,
+        statusCode: details.statusCode,
+        type: details.type,
       });
       scheduleWrite(tabId);
     }

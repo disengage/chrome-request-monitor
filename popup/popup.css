@@ -15,6 +15,8 @@
   --accent-ring: rgba(91, 140, 255, 0.35);
   --danger: #ff6b6b;
   --danger-soft: rgba(255, 107, 107, 0.12);
+  --asset: #2dd4bf;
+  --asset-soft: rgba(45, 212, 191, 0.12);
   --toast-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
   --radius: 10px;
   --radius-sm: 6px;
@@ -42,6 +44,8 @@
     --accent-ring: rgba(42, 95, 224, 0.3);
     --danger: #c93030;
     --danger-soft: rgba(201, 48, 48, 0.08);
+    --asset: #0f766e;
+    --asset-soft: rgba(15, 118, 110, 0.1);
     --toast-shadow: 0 4px 14px rgba(21, 23, 28, 0.18);
   }
 }
@@ -233,7 +237,62 @@ body {
 #search {
   position: relative;
   flex-shrink: 0;
+  margin-bottom: 8px;
+}
+
+/* ---------- Quick filters ---------- */
+
+#quick_filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
   margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 12px 1px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.15;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease,
+    color 120ms ease;
+}
+
+.filter-chip[data-filter="api"]:hover,
+.filter-chip[data-filter="api"]:focus-visible {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.filter-chip[data-filter="assets"]:hover,
+.filter-chip[data-filter="assets"]:focus-visible {
+  border-color: var(--asset);
+  background: var(--asset-soft);
+  color: var(--asset);
+}
+
+.filter-chip[data-filter="errors"]:hover,
+.filter-chip[data-filter="errors"]:focus-visible {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.filter-chip:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 
 .search-icon {
@@ -283,7 +342,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   flex-shrink: 0;
 }
 

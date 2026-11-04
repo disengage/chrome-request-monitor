@@ -4,6 +4,7 @@ const domainsEl = document.getElementById("domains");
 const domainsSection = document.getElementById("domains_section");
 const domainsToggle = document.getElementById("domains_toggle");
 const input = document.getElementById("search_input");
+const quickFilters = document.getElementById("quick_filters");
 const title = document.getElementById("title");
 const statusText = document.getElementById("status");
 const recent = document.getElementById("recent");
@@ -14,10 +15,28 @@ const titleText = `Network Requests`;
 const LAST_SEARCH_KEY = "last_search";
 const FIRST_CHUNK = 150;
 const CHUNK_SIZE = 400;
+const FILTER_LABELS = {
+  api: "API Requests",
+  assets: "Web Assets",
+  errors: "Error (5xx,4xx)",
+};
+const ASSET_TYPES = new Set([
+  "stylesheet",
+  "script",
+  "image",
+  "font",
+  "media",
+  "object",
+]);
+const API_TYPES = new Set(["xmlhttprequest", "websocket"]);
+const ASSET_EXT_RE =
+  /\.(css|js|mjs|cjs|map|png|jpe?g|gif|webp|svg|ico|avif|woff2?|ttf|otf|eot|mp4|webm|mp3|wav|ogg)(?:\?|#|$)/i;
+const API_PATH_RE = /\/(?:api|graphql|gql)(?:\/|\?|#|$)|\/v\d+(?:\/|\?|#|$)/i;
 
 var requests = [];
 var currentTabId = null;
 var activeDomain = null;
+var activeFilter = null;
 var domainsOpen = false;
 var domainsDirty = true;
 var renderTokens = new WeakMap();
@@ -58,11 +77,52 @@ function normalizeRequests(raw) {
   return [...raw].reverse();
 }
 
-function filterByKeyword(text) {
+function isAssetRequest(req) {
+  if (req.type && ASSET_TYPES.has(req.type)) {
+    return true;
+  }
+  return ASSET_EXT_RE.test(req.url || "");
+}
+
+function isApiRequest(req) {
+  if (req.type && API_TYPES.has(req.type)) {
+    return true;
+  }
+  if (isAssetRequest(req)) {
+    return false;
+  }
+  return API_PATH_RE.test(req.url || "");
+}
+
+function isErrorRequest(req) {
+  const code = Number(req.statusCode);
+  return Number.isFinite(code) && code >= 400 && code < 600;
+}
+
+function matchesFilter(req, filter) {
+  if (filter === "api") {
+    return isApiRequest(req);
+  }
+  if (filter === "assets") {
+    return isAssetRequest(req);
+  }
+  if (filter === "errors") {
+    return isErrorRequest(req);
+  }
+  return true;
+}
+
+function filterByKeyword(text = input.value.trim()) {
   if (text === "") {
     return requests;
   }
   return requests.filter((request) => request.url.includes(text));
+}
+
+function filterByCategory(filter, text = input.value.trim()) {
+  return filterByKeyword(text).filter((request) =>
+    matchesFilter(request, filter)
+  );
 }
 
 function refreshMainViews() {
@@ -74,12 +134,18 @@ function refreshMainViews() {
   }
 }
 
+function refreshDetailPage() {
+  if (activeDomain) {
+    renderDomainRequests(activeDomain);
+  } else if (activeFilter) {
+    renderFilterRequests(activeFilter);
+  }
+}
+
 function applyRequestsFromStorage(raw) {
   requests = normalizeRequests(raw);
   refreshMainViews();
-  if (activeDomain) {
-    renderDomainRequests(activeDomain);
-  }
+  refreshDetailPage();
 }
 
 function scheduleRequestsRefresh(raw) {
@@ -106,6 +172,12 @@ function saveSearch(text, matchCount) {
 function applySearch(text) {
   const count = updateDisplayByKeyword(text);
   saveSearch(text, count);
+  refreshDetailPage();
+  if (domainsOpen) {
+    displayDomains();
+  } else {
+    domainsDirty = true;
+  }
 }
 
 document.getElementById("clear").addEventListener("click", () => {
@@ -157,6 +229,14 @@ domainList.addEventListener("click", onRequestClick);
 
 input.addEventListener("input", (event) => {
   applySearch(event.target.value.trim());
+});
+
+quickFilters.addEventListener("click", (event) => {
+  const chip = event.target.closest(".filter-chip");
+  if (!chip) {
+    return;
+  }
+  showFilterPage(chip.dataset.filter);
 });
 
 async function init() {
@@ -306,7 +386,7 @@ function aggregateDomains(source) {
 function displayDomains() {
   domainsDirty = false;
   domainsEl.replaceChildren();
-  const domains = aggregateDomains(requests);
+  const domains = aggregateDomains(filterByKeyword());
   if (domains.length === 0) {
     const empty = document.createElement("div");
     empty.classList.add("domains-empty");
@@ -358,17 +438,21 @@ function displayDomains() {
   domainsEl.appendChild(fragment);
 }
 
-function renderDomainRequests(hostname) {
-  const filtered = (requests || []).filter(
-    (req) => getHostname(req.url) === hostname
-  );
+function fillDetailList(filtered, titleLabel) {
   if (filtered.length > 0) {
     renderRequestList(domainList, filtered);
   } else {
     clearDisplay(domainList);
     displayEmpty(domainList);
   }
-  domainTitle.textContent = `${hostname} (${filtered.length})`;
+  domainTitle.textContent = `${titleLabel} (${filtered.length})`;
+}
+
+function renderDomainRequests(hostname) {
+  const filtered = filterByKeyword().filter(
+    (req) => getHostname(req.url) === hostname
+  );
+  fillDetailList(filtered, hostname);
   domainFavicon.src = faviconUrl(hostname);
   domainFavicon.hidden = false;
   domainFavicon.onerror = () => {
@@ -376,14 +460,30 @@ function renderDomainRequests(hostname) {
   };
 }
 
+function renderFilterRequests(filter) {
+  const filtered = filterByCategory(filter);
+  fillDetailList(filtered, FILTER_LABELS[filter] || filter);
+  domainFavicon.hidden = true;
+  domainFavicon.removeAttribute("src");
+}
+
 function showDomainPage(hostname) {
   activeDomain = hostname;
+  activeFilter = null;
   renderDomainRequests(hostname);
+  pagerTrack.classList.add("show-domain");
+}
+
+function showFilterPage(filter) {
+  activeFilter = filter;
+  activeDomain = null;
+  renderFilterRequests(filter);
   pagerTrack.classList.add("show-domain");
 }
 
 function showMainPage() {
   activeDomain = null;
+  activeFilter = null;
   pagerTrack.classList.remove("show-domain");
   domainFavicon.hidden = true;
   domainFavicon.removeAttribute("src");
