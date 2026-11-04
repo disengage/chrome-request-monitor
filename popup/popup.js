@@ -216,13 +216,45 @@ function displayStatus(text) {
   }, 1000);
 }
 
+function methodBadgeClass(method) {
+  const m = String(method || "").toUpperCase();
+  switch (m) {
+    case "GET":
+      return "method-badge method-get";
+    case "POST":
+      return "method-badge method-post";
+    case "PUT":
+      return "method-badge method-put";
+    case "PATCH":
+      return "method-badge method-patch";
+    case "DELETE":
+      return "method-badge method-delete";
+    case "OPTIONS":
+      return "method-badge method-options";
+    case "HEAD":
+      return "method-badge method-head";
+    default:
+      return "method-badge method-other";
+  }
+}
+
 function createRequestItem(req) {
   const item = document.createElement("div");
   item.classList.add("request-item");
   item.setAttribute("data-frame-id", req.frameId);
   item.setAttribute("data-url", req.url);
   item.setAttribute("data-method", req.method);
-  item.textContent = `${req.method} - ${req.url}`;
+
+  const badge = document.createElement("span");
+  badge.className = methodBadgeClass(req.method);
+  badge.textContent = String(req.method || "?").toUpperCase();
+
+  const url = document.createElement("span");
+  url.classList.add("request-url");
+  url.textContent = req.url;
+
+  item.appendChild(badge);
+  item.appendChild(url);
   return item;
 }
 
