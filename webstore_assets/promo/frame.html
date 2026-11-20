@@ -6,7 +6,7 @@
       document.documentElement.dataset.view =
         new URLSearchParams(location.search).get("view") || "list";
     </script>
-    <link rel="stylesheet" href="../popup/popup.css" />
+    <link rel="stylesheet" href="../../popup/popup.css" />
     <style>
       :root {
         color-scheme: dark;
@@ -47,7 +47,8 @@
       html[data-view="filter"] .view-filter,
       html[data-view="domains"] .view-domains,
       html[data-view="domain"] .view-domain,
-      html[data-view="api"] .view-api {
+      html[data-view="api"] .view-api,
+      html[data-view="detail"] .view-detail {
         display: block;
       }
 
@@ -84,7 +85,7 @@
     <template id="main-chrome">
       <header id="header">
         <div class="brand">
-          <img class="brand-logo" src="../icons/icon32.png" alt="" width="20" height="20" />
+          <img class="brand-logo" src="../../icons/icon32.png" alt="" width="20" height="20" />
           <h1 id="title">Network Requests</h1>
         </div>
         <button type="button" class="btn btn-ghost">
@@ -109,7 +110,7 @@
           <div class="page page-main">
             <header id="header">
               <div class="brand">
-                <img class="brand-logo" src="../icons/icon32.png" alt="" width="20" height="20" />
+                <img class="brand-logo" src="../../icons/icon32.png" alt="" width="20" height="20" />
                 <h1 id="title">Network Requests (844)</h1>
               </div>
               <button type="button" class="btn btn-ghost">
@@ -161,7 +162,7 @@
           <div class="page page-main">
             <header id="header">
               <div class="brand">
-                <img class="brand-logo" src="../icons/icon32.png" alt="" width="20" height="20" />
+                <img class="brand-logo" src="../../icons/icon32.png" alt="" width="20" height="20" />
                 <h1 id="title">Network Requests (312)</h1>
               </div>
               <button type="button" class="btn btn-ghost">
@@ -215,7 +216,7 @@
           <div class="page page-main">
             <header id="header">
               <div class="brand">
-                <img class="brand-logo" src="../icons/icon32.png" alt="" width="20" height="20" />
+                <img class="brand-logo" src="../../icons/icon32.png" alt="" width="20" height="20" />
                 <h1 id="title">Network Requests (844)</h1>
               </div>
               <button type="button" class="btn btn-ghost">
@@ -294,7 +295,6 @@
           </div>
         </div>
       </div>
-      <div class="status" alt="success">Copies!!!</div>
     </div>
 
     <div class="view view-api">
@@ -325,6 +325,47 @@
               <div class="request-item"><span class="method-badge method-patch">PATCH</span><span class="request-url">https://api.github.com/repos/github/docs/issues/4821</span></div>
               <div class="request-item"><span class="method-badge method-options">OPTIONS</span><span class="request-url">https://api.github.com/repos/github/docs</span></div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view view-detail">
+      <div class="pager show-detail">
+        <div class="pager-track">
+          <div class="page page-main"></div>
+        </div>
+        <div class="page page-detail">
+          <header id="detail_header">
+            <div class="detail-toolbar">
+              <button type="button" class="btn btn-ghost">
+                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                  <path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Back
+              </button>
+              <button type="button" class="btn btn-ghost">Copy URL</button>
+            </div>
+            <div class="detail-url-row">
+              <span class="method-badge method-post">POST</span>
+              <p class="detail-url">https://api.github.com/graphql</p>
+            </div>
+          </header>
+          <div class="detail-pills">
+            <span class="meta-pill meta-2xx" title="HTTP 200: the server completed this request">200</span>
+            <span class="meta-pill meta-type-xhr" title="Resource type: Fetch or XHR request">xmlhttprequest</span>
+            <span class="meta-pill meta-cache" title="This response was served from the browser cache">cached</span>
+          </div>
+          <h2 class="section-title detail-section-title">Response Headers</h2>
+          <div id="detail_headers">
+            <div class="header-row"><span class="header-name">Content-Type</span><span class="header-value">application/json; charset=utf-8</span></div>
+            <div class="header-row"><span class="header-name">Cache-Control</span><span class="header-value">no-cache</span></div>
+            <div class="header-row"><span class="header-name">Etag</span><span class="header-value">"a1b2c3d4e5"</span></div>
+            <div class="header-row"><span class="header-name">Content-Length</span><span class="header-value">842</span></div>
+            <div class="header-row"><span class="header-name">Server</span><span class="header-value">github.com</span></div>
+            <div class="header-row"><span class="header-name">X-Request-Id</span><span class="header-value">req_8f3c1a</span></div>
+            <div class="header-row"><span class="header-name">Access-Control-Allow-Origin</span><span class="header-value">https://github.com</span></div>
+            <div class="header-row"><span class="header-name">Cf-Cache-Status</span><span class="header-value">HIT</span></div>
           </div>
         </div>
       </div>
