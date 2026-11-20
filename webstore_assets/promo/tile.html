@@ -121,6 +121,19 @@
         background: #16a34a;
       }
 
+      .ok {
+        background: #16a34a;
+      }
+
+      .xhr {
+        background: #0284c7;
+      }
+
+      .cache {
+        background: #f0c000;
+        color: #3f2a00;
+      }
+
       .pill {
         display: inline-flex;
         align-items: center;
@@ -211,7 +224,7 @@
   <body>
     <div class="tile">
       <div class="brand">
-        <img src="../icons/icon32.png" alt="" />
+        <img src="../../icons/icon32.png" alt="" />
         <span>Network Request Monitor</span>
       </div>
       <h1>Every request on this tab.</h1>
@@ -245,13 +258,13 @@
           <p>Narrows the list as you type</p>
         </div>
         <div class="card">
-          <div class="host">
-            <img src="https://www.google.com/s2/favicons?domain=github.com&sz=32" alt="" />
-            <span>api.github.com</span>
-            <span class="count">312</span>
+          <div class="token">
+            <span class="badge ok">200</span>
+            <span class="badge xhr">xhr</span>
+            <span class="badge cache">cached</span>
           </div>
-          <strong>By domain</strong>
-          <p>Open a host, click to copy</p>
+          <strong>Request detail</strong>
+          <p>Status, type, cache, and headers</p>
         </div>
       </div>
     </div>
