@@ -6,7 +6,10 @@ Chrome extension (Manifest V3) that captures completed network requests for the 
 
 - Capture completed requests per tab via `chrome.webRequest.onCompleted`
 - Popup list of requests, newest first, with a method badge and the URL
-- Click a request to copy its URL (toast: `Copies!!!`)
+- Click a request to slide in a detail page; **Back** returns to the list you opened it from
+- Detail shows the method badge, URL, and pills for the HTTP status, resource type, and cache (`cached` or `network`). Hover a pill for a short explanation
+- **Copy URL** on the detail page copies the URL (toast: `Copies!!!`)
+- Response headers list the useful ones that were captured, such as content type, cache control, and etag
 - Live URL filter
 - Recent search chips (apply / delete)
 - Last search is restored on open only if it still matches requests; otherwise the popup starts unfiltered
@@ -33,8 +36,9 @@ Chrome extension (Manifest V3) that captures completed network requests for the 
 1. Browse normally — requests for that tab are recorded in the background
 2. Open the popup to inspect the current tab’s requests
 3. Use the URL filter, recent chips, or **API Requests** / **Web Assets** / **Error (5xx,4xx)** to narrow the list
-4. Scroll to **By Domain**, click a domain to drill in, then **← Back** (the same Back control leaves a quick filter)
-5. Use **Clear Logs** to wipe data for the current tab
+4. Click a request to open its detail, then **Copy URL** if you want the address. **← Back** returns to that list
+5. Scroll to **By Domain**, click a domain to drill in, then **← Back** (the same Back control leaves a quick filter)
+6. Use **Clear Logs** to wipe data for the current tab
 
 ## Project structure
 
@@ -66,6 +70,8 @@ All captured data stays in `chrome.storage.local` on your device; nothing is sen
 ## Notes
 
 - Data is scoped by `tabId` and cleared when the tab is closed
-- Each request stores the URL, method, frame ID, status code, and resource type
+- Each request stores the URL, method, frame ID, status code, resource type, request ID, whether it came from cache, and a short list of response headers
+- Header values are trimmed to 300 characters. `Set-Cookie` is not stored
+- Requests recorded before this data was captured show `not captured` on the detail page
 - `chrome-extension://` URLs are ignored
 - Favicons use Google’s favicon service for the request hostname

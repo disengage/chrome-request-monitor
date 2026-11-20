@@ -1,6 +1,44 @@
 const requests = {};
 const pendingWrites = new Map();
 const WRITE_DELAY_MS = 250;
+const HEADER_VALUE_LIMIT = 300;
+const USEFUL_HEADERS = new Set([
+  "content-type",
+  "content-length",
+  "content-encoding",
+  "cache-control",
+  "etag",
+  "age",
+  "expires",
+  "last-modified",
+  "date",
+  "server",
+  "location",
+  "vary",
+  "access-control-allow-origin",
+  "x-cache",
+  "x-request-id",
+  "cf-cache-status",
+]);
+
+function pickHeaders(headers) {
+  if (!Array.isArray(headers)) {
+    return [];
+  }
+  const picked = [];
+  headers.forEach((header) => {
+    const name = String(header?.name || "").toLowerCase();
+    const value = header?.value;
+    if (!USEFUL_HEADERS.has(name) || typeof value !== "string" || value === "") {
+      return;
+    }
+    picked.push({
+      name,
+      value: value.slice(0, HEADER_VALUE_LIMIT),
+    });
+  });
+  return picked;
+}
 
 function scheduleWrite(tabId) {
   if (pendingWrites.has(tabId)) {
@@ -32,16 +70,20 @@ chrome.webRequest.onCompleted.addListener(
         requests[tabId] = [];
       }
       requests[tabId].push({
+        requestId: details.requestId,
         url: details.url,
         method: details.method,
         frameId: details.frameId,
         statusCode: details.statusCode,
         type: details.type,
+        fromCache: details.fromCache,
+        headers: pickHeaders(details.responseHeaders),
       });
       scheduleWrite(tabId);
     }
   },
   { urls: ["<all_urls>"] },
+  ["responseHeaders"],
 );
 
 // Clear logs on demand

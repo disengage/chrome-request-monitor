@@ -98,6 +98,36 @@
           <div id="domain_requests"></div>
         </div>
       </div>
+
+      <div class="page page-detail" id="page_detail" aria-hidden="true" inert>
+        <header id="detail_header">
+          <div class="detail-toolbar">
+            <button type="button" id="detail_back" class="btn btn-ghost" aria-label="Back">
+              <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                <path
+                  d="M10 3.5 5.5 8l4.5 4.5"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Back
+            </button>
+            <button type="button" id="detail_copy" class="btn btn-ghost">Copy URL</button>
+          </div>
+          <div class="detail-url-row">
+            <span id="detail_method" class="method-badge method-other">?</span>
+            <p id="detail_url" class="detail-url"></p>
+          </div>
+        </header>
+
+        <div id="detail_pills" class="detail-pills"></div>
+
+        <h2 class="section-title detail-section-title">Response Headers</h2>
+        <div id="detail_headers"></div>
+      </div>
     </div>
     <div class="status" id="status" role="status"></div>
     <script src="popup.js"></script>

@@ -9,6 +9,13 @@ const title = document.getElementById("title");
 const statusText = document.getElementById("status");
 const recent = document.getElementById("recent");
 const pagerTrack = document.getElementById("pager_track");
+const pager = document.querySelector(".pager");
+const pageDetail = document.getElementById("page_detail");
+const detailMethod = document.getElementById("detail_method");
+const detailUrl = document.getElementById("detail_url");
+const detailPills = document.getElementById("detail_pills");
+const detailHeaders = document.getElementById("detail_headers");
+const requestByElement = new WeakMap();
 const domainTitle = document.getElementById("domain_title");
 const domainFavicon = document.getElementById("domain_favicon");
 const titleText = `Network Requests`;
@@ -29,6 +36,17 @@ const ASSET_TYPES = new Set([
   "object",
 ]);
 const API_TYPES = new Set(["xmlhttprequest", "websocket"]);
+const TYPE_PILL_CLASS = {
+  main_frame: "meta-type-main-frame",
+  sub_frame: "meta-type-sub-frame",
+  stylesheet: "meta-type-stylesheet",
+  script: "meta-type-script",
+  image: "meta-type-image",
+  font: "meta-type-font",
+  media: "meta-type-media",
+  xmlhttprequest: "meta-type-xhr",
+  websocket: "meta-type-websocket",
+};
 const ASSET_EXT_RE =
   /\.(css|js|mjs|cjs|map|png|jpe?g|gif|webp|svg|ico|avif|woff2?|ttf|otf|eot|mp4|webm|mp3|wav|ogg)(?:\?|#|$)/i;
 const API_PATH_RE = /\/(?:api|graphql|gql)(?:\/|\?|#|$)|\/v\d+(?:\/|\?|#|$)/i;
@@ -37,6 +55,7 @@ var requests = [];
 var currentTabId = null;
 var activeDomain = null;
 var activeFilter = null;
+var activeRequestId = null;
 var domainsOpen = false;
 var domainsDirty = true;
 var renderTokens = new WeakMap();
@@ -146,6 +165,7 @@ function applyRequestsFromStorage(raw) {
   requests = normalizeRequests(raw);
   refreshMainViews();
   refreshDetailPage();
+  refreshOpenDetail();
 }
 
 function scheduleRequestsRefresh(raw) {
@@ -198,6 +218,15 @@ document.getElementById("domain_back").addEventListener("click", () => {
   showMainPage();
 });
 
+document.getElementById("detail_back").addEventListener("click", () => {
+  hideRequestDetail();
+});
+
+document.getElementById("detail_copy").addEventListener("click", () => {
+  copyToClipBoard(detailUrl.textContent);
+  displayStatus("Copies!!!");
+});
+
 function setDomainsOpen(open) {
   domainsOpen = open;
   domainsSection.classList.toggle("is-open", open);
@@ -219,8 +248,11 @@ function onRequestClick(event) {
   if (!item) {
     return;
   }
-  copyToClipBoard(item.getAttribute("data-url"));
-  displayStatus("Copies!!!");
+  const req = requestByElement.get(item);
+  if (!req) {
+    return;
+  }
+  showRequestDetail(req);
   addKeywordToRecent(input.value);
 }
 
@@ -335,6 +367,7 @@ function createRequestItem(req) {
 
   item.appendChild(badge);
   item.appendChild(url);
+  requestByElement.set(item, req);
   return item;
 }
 
@@ -481,7 +514,189 @@ function showFilterPage(filter) {
   pagerTrack.classList.add("show-domain");
 }
 
+function statusPillClass(code) {
+  const status = Number(code);
+  if (status >= 200 && status < 300) {
+    return "meta-pill meta-2xx";
+  }
+  if (status >= 300 && status < 400) {
+    return "meta-pill meta-3xx";
+  }
+  if (status >= 400 && status < 500) {
+    return "meta-pill meta-4xx";
+  }
+  if (status >= 500 && status < 600) {
+    return "meta-pill meta-5xx";
+  }
+  return "meta-pill meta-other";
+}
+
+function cachePill(fromCache) {
+  if (fromCache === true) {
+    return {
+      className: "meta-pill meta-cache",
+      text: "cached",
+      title: "This response was served from the browser cache",
+    };
+  }
+  if (fromCache === false) {
+    return {
+      className: "meta-pill meta-network",
+      text: "network",
+      title: "This response was fetched from the network",
+    };
+  }
+  return {
+    className: "meta-pill meta-missing",
+    text: "not captured",
+    title: "Cache status was not captured for this request",
+  };
+}
+
+function statusPillTitle(code) {
+  const status = Number(code);
+  if (status >= 200 && status < 300) {
+    return `HTTP ${status}: the server completed this request`;
+  }
+  if (status >= 300 && status < 400) {
+    return `HTTP ${status}: the server redirected this request`;
+  }
+  if (status >= 400 && status < 500) {
+    return `HTTP ${status}: the request was rejected`;
+  }
+  if (status >= 500 && status < 600) {
+    return `HTTP ${status}: the server failed to complete this request`;
+  }
+  if (!Number.isFinite(status)) {
+    return "HTTP status code was not captured";
+  }
+  return `HTTP ${status}: response status code`;
+}
+
+const TYPE_PILL_TITLE = {
+  main_frame: "Main document of the tab",
+  sub_frame: "Document loaded inside a frame",
+  stylesheet: "CSS stylesheet",
+  script: "JavaScript file",
+  image: "Image",
+  font: "Font file",
+  media: "Audio or video",
+  xmlhttprequest: "Fetch or XHR request",
+  websocket: "WebSocket handshake",
+  object: "Plugin or embedded object",
+  ping: "Beacon or ping",
+  csp_report: "Content Security Policy report",
+  webbundle: "Web bundle",
+  other: "Other resource",
+};
+
+function typePillTitle(type) {
+  if (!type) {
+    return "Resource type was not captured";
+  }
+  const label = TYPE_PILL_TITLE[type];
+  return label ? `Resource type: ${label}` : `Resource type: ${type}`;
+}
+
+function headerLabel(name) {
+  return String(name || "")
+    .split("-")
+    .map((part) => (part ? part.charAt(0).toUpperCase() + part.slice(1) : part))
+    .join("-");
+}
+
+function typePillClass(type) {
+  return `meta-pill ${TYPE_PILL_CLASS[type] || "meta-type"}`;
+}
+
+function createPill(className, text, title) {
+  const pill = document.createElement("span");
+  pill.className = className;
+  pill.textContent = text;
+  if (title) {
+    pill.title = title;
+  }
+  return pill;
+}
+
+function renderDetailPills(req) {
+  const status =
+    req.statusCode == null || req.statusCode === "" ? "—" : String(req.statusCode);
+  const cache = cachePill(req.fromCache);
+  detailPills.replaceChildren(
+    createPill(statusPillClass(req.statusCode), status, statusPillTitle(req.statusCode)),
+    createPill(typePillClass(req.type), req.type || "unknown", typePillTitle(req.type)),
+    createPill(cache.className, cache.text, cache.title),
+  );
+}
+
+function renderDetailHeaders(req) {
+  detailHeaders.replaceChildren();
+  if (!Array.isArray(req.headers)) {
+    displayEmpty(detailHeaders);
+    detailHeaders.firstChild.textContent = "Headers were not captured";
+    return;
+  }
+  if (req.headers.length === 0) {
+    displayEmpty(detailHeaders);
+    detailHeaders.firstChild.textContent = "No response headers";
+    return;
+  }
+  const fragment = document.createDocumentFragment();
+  req.headers.forEach((header) => {
+    const row = document.createElement("div");
+    row.className = "header-row";
+
+    const name = document.createElement("span");
+    name.className = "header-name";
+    name.textContent = headerLabel(header.name);
+
+    const value = document.createElement("span");
+    value.className = "header-value";
+    value.textContent = header.value;
+
+    row.appendChild(name);
+    row.appendChild(value);
+    fragment.appendChild(row);
+  });
+  detailHeaders.appendChild(fragment);
+}
+
+function renderRequestDetail(req) {
+  detailMethod.className = methodBadgeClass(req.method);
+  detailMethod.textContent = String(req.method || "?").toUpperCase();
+  detailUrl.textContent = req.url || "";
+  renderDetailPills(req);
+  renderDetailHeaders(req);
+}
+
+function showRequestDetail(req) {
+  activeRequestId = req.requestId ?? null;
+  renderRequestDetail(req);
+  pageDetail.inert = false;
+  pageDetail.setAttribute("aria-hidden", "false");
+  pager.classList.add("show-detail");
+}
+
+function hideRequestDetail() {
+  activeRequestId = null;
+  pager.classList.remove("show-detail");
+  pageDetail.inert = true;
+  pageDetail.setAttribute("aria-hidden", "true");
+}
+
+function refreshOpenDetail() {
+  if (!pager.classList.contains("show-detail") || activeRequestId == null) {
+    return;
+  }
+  const req = requests.find((item) => item.requestId === activeRequestId);
+  if (req) {
+    renderRequestDetail(req);
+  }
+}
+
 function showMainPage() {
+  hideRequestDetail();
   activeDomain = null;
   activeFilter = null;
   pagerTrack.classList.remove("show-domain");
